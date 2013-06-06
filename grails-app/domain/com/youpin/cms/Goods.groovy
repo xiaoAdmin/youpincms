@@ -22,7 +22,7 @@ class Goods {
 	Double promotionPrice //促销价格
 	String promotionPriceDes//促销价格des
 
-	String cid//标准商品后台类目id。该ID可以通过taobao.itemcats.get接口获取到,数字串，例如：1234,34343,2313
+	Long cid//标准商品后台类目id。该ID可以通过taobao.itemcats.get接口获取到,数字串，例如：1234,34343,2313
 	
 	Date creationDate = new Date()
 	String creationDateDes= creationDate.format('yyyy-MM-dd')

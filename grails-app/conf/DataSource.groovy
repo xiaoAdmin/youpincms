@@ -1,8 +1,8 @@
 dataSource {
     pooled = true
     driverClassName = "com.mysql.jdbc.Driver"
-    username = "dev"
-    password = "root"
+    username = "youpin"
+    password = "youpin@youpin.com"
 }
 hibernate {
     cache.use_second_level_cache = true
@@ -15,6 +15,8 @@ environments {
         dataSource {
             dbCreate = "update" // one of 'create', 'create-drop', 'update', 'validate', ''
             url = "jdbc:mysql://localhost/9buy?useUnicode=true&characterEncoding=UTF-8"
+//			url = "jdbc:mysql://208.87.240.212/9buy?useUnicode=true&characterEncoding=UTF-8"
+			
         }
     }
     test {

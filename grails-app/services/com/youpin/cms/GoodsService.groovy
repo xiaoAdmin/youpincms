@@ -16,10 +16,6 @@ class GoodsService {
 		[key:GoodsStatus.SCHEDULED.value,value:GoodsStatus.SCHEDULED.description]
 	]
 	
-	def test(){
-		println 'catch'
-	}
-	
 	def service(){
 		def queryParams = [:]
 		queryParams['max'] = Math.min(max ?: 10, 100)

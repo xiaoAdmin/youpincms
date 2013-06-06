@@ -1,3 +1,10 @@
+import static org.quartz.JobBuilder.*
+import static org.quartz.SimpleScheduleBuilder.*
+import static org.quartz.TriggerBuilder.*
+import grails.plugin.quartz2.ClosureJob
+
+import org.quartz.impl.triggers.SimpleTriggerImpl
+
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -15,18 +22,26 @@ grails.project.groupId = appName // change this to alter the default package nam
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
 grails.mime.types = [
-    all:           '*/*',
-    atom:          'application/atom+xml',
-    css:           'text/css',
-    csv:           'text/csv',
-    form:          'application/x-www-form-urlencoded',
-    html:          ['text/html','application/xhtml+xml'],
-    js:            'text/javascript',
-    json:          ['application/json', 'text/json'],
-    multipartForm: 'multipart/form-data',
-    rss:           'application/rss+xml',
-    text:          'text/plain',
-    xml:           ['text/xml', 'application/xml']
+	all:           '*/*',
+	atom:          'application/atom+xml',
+	css:           'text/css',
+	csv:           'text/csv',
+	form:          'application/x-www-form-urlencoded',
+	html:          [
+		'text/html',
+		'application/xhtml+xml'
+	],
+	js:            'text/javascript',
+	json:          [
+		'application/json',
+		'text/json'
+	],
+	multipartForm: 'multipart/form-data',
+	rss:           'application/rss+xml',
+	text:          'text/plain',
+	xml:           [
+		'text/xml',
+		'application/xml']
 ]
 
 //grails.gorm.failOnError=true
@@ -34,7 +49,12 @@ grails.mime.types = [
 //grails.urlmapping.cache.maxsize = 1000
 
 // What URL patterns should be processed by the resources plugin
-grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
+grails.resources.adhoc.patterns = [
+	'/images/*',
+	'/css/*',
+	'/js/*',
+	'/plugins/*'
+]
 
 grails.views.javascript.library="jquery"
 // The default codec used to encode data with ${}
@@ -66,34 +86,56 @@ grails.gorm.default.constraints = {
 }
 
 environments {
-    development {
-        grails.logging.jul.usebridge = true
-    }
-    production {
-        grails.logging.jul.usebridge = false
-        // TODO: grails.serverURL = "http://localhost:8090/cms"
-    }
+	development {
+		grails.logging.jul.usebridge = true
+	}
+	production {
+		grails.logging.jul.usebridge = false
+		// TODO: grails.serverURL = "http://localhost:8090/cms"
+	}
 }
 
 // log4j configuration
 log4j = {
-    // Example of changing the log pattern for the default console appender:
-    //
-    //appenders {
-    //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
-    //}
+	// Example of changing the log pattern for the default console appender:
+	//
+	//appenders {
+	//    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
+	//}
 
-    error  'org.codehaus.groovy.grails.web.servlet',        // controllers
-           'org.codehaus.groovy.grails.web.pages',          // GSP
-           'org.codehaus.groovy.grails.web.sitemesh',       // layouts
-           'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-           'org.codehaus.groovy.grails.web.mapping',        // URL mapping
-           'org.codehaus.groovy.grails.commons',            // core / classloading
-           'org.codehaus.groovy.grails.plugins',            // plugins
-           'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
-           'org.springframework',
-           'org.hibernate',
-           'net.sf.ehcache.hibernate'
+	error  'org.codehaus.groovy.grails.web.servlet',        // controllers
+			'org.codehaus.groovy.grails.web.pages',          // GSP
+			'org.codehaus.groovy.grails.web.sitemesh',       // layouts
+			'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
+			'org.codehaus.groovy.grails.web.mapping',        // URL mapping
+			'org.codehaus.groovy.grails.commons',            // core / classloading
+			'org.codehaus.groovy.grails.plugins',            // plugins
+			'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
+			'org.springframework',
+			'org.hibernate',
+			'net.sf.ehcache.hibernate'
 }
 
-grails.config.locations = [ "classpath:conf/Quartz.groovy"]
+grails.plugin.quartz2.autoStartup = true
+
+org{
+	quartz{
+		//anything here will get merged into the quartz.properties so you don't need another file
+		scheduler.instanceName = 'Scheduler'
+		threadPool.class = 'org.quartz.simpl.SimpleThreadPool'
+		threadPool.threadCount = 1
+		threadPool.threadsInheritContextClassLoaderOfInitializingThread = true
+		jobStore.class = 'org.quartz.simpl.RAMJobStore'
+	}
+}
+
+grails.plugin.quartz2.jobSetup.goodsLoader = { quartzScheduler, ctx ->
+	//how it should look
+	def jobDetail = ClosureJob.createJob { jobCtx , appCtx->
+		appCtx.goodsFinderService.start()
+	}
+
+	def trigger1 = new SimpleTriggerImpl(name:"trig1", startTime:new Date(),repeatInterval:120000,repeatCount:-1)
+
+	quartzScheduler.scheduleJob(jobDetail, trigger1)
+}
